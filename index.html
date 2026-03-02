@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CADASA | Control de Transporte</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0B1D3A; --accent: #FFC107; --accent2: #0066FF;
+      --surface: #F4F7FC; --white: #FFFFFF; --text: #1A2740;
+      --muted: #6B7FA3; --border: #DDE4EF; --row-hover: #EBF2FF;
+      --cadasa-red: #D32F2F;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+    
+    /* LOGIN */
+    #login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #142850 0%, #0B1D3A 100%); padding: 20px; }
+    .login-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 3rem 2.5rem; border-radius: 24px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+    .login-card h2 { font-family: 'Syne', sans-serif; color: white; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .login-card p { color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2rem; }
+    
+    .input-group { margin-bottom: 1.2rem; text-align: left; }
+    .input-group label { display: block; color: rgba(255,255,255,0.7); font-size: 0.7rem; margin-bottom: 0.5rem; font-weight: 600; }
+    .input-group input { width: 100%; padding: 14px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; transition: 0.3s; }
+    .input-group input:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.15); }
+    
+    .login-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; font-weight: 800; cursor: pointer; color: var(--navy); transition: 0.3s; font-family: 'Syne'; }
+    .login-btn:hover { background: #ffca2c; transform: translateY(-2px); }
+
+    /* DASHBOARD */
+    #dashboard-page { display: none; }
+    .topbar { background: var(--navy); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 70px; color: white; border-bottom: 3px solid var(--accent); position: sticky; top:0; z-index: 100; }
+    .topbar-brand { display: flex; align-items: center; gap: 1rem; }
+    .logo-icon { width: 42px; height: 42px; fill: var(--accent); }
+    
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-size: 1.8rem; }
+    
+    /* TABLE STYLES */
+    .card { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    
+    .header-row td { background: var(--navy); color: white; font-weight: 700; padding: 1.2rem 1rem; font-size: 0.75rem; text-transform: uppercase; }
+    .month-divider { background: #f8f9fa; border-left: 5px solid var(--accent2); }
+    .month-divider td { padding: 1rem; font-weight: 800; color: var(--navy); font-family: 'Syne'; font-size: 1rem; }
+    
+    .data-row td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .data-row:hover { background: var(--row-hover); }
+    
+    .subtotal-row { background: #E3F2FD; font-weight: 700; color: var(--accent2); }
+    .subtotal-row td { padding: 1rem; border-top: 2px solid var(--accent2); }
+    
+    .grand-total-row { background: var(--navy); color: var(--accent); font-weight: 800; font-size: 1.1rem; }
+    .grand-total-row td { padding: 1.5rem 1rem; border-top: 4px solid var(--accent); }
+
+    .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn-logout:hover { background: var(--cadasa-red); }
+
+    .loader { padding: 4rem; text-align: center; color: var(--muted); font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <div id="login-page">
+    <div class="login-card">
+      <svg class="logo-icon" style="margin-bottom: 1rem;" viewBox="0 0 24 24">
+        <path d="M20,8H17V4H3C1.89,4 1,4.89 1,6V17H3A3,3 0 0,0 6,20A3,3 0 0,0 9,17H15A3,3 0 0,0 18,20A3,3 0 0,0 21,17H23V12L20,8M6,18.5A1.5,1.5 0 0,1 4.5,17A1.5,1.5 0 0,1 6,15.5A1.5,1.5 0 0,1 7.5,17A1.5,1.5 0 0,1 6,18.5M18,18.5A1.5,1.5 0 0,1 16.5,17A1.5,1.5 0 0,1 18,15.5A1.5,1.5 0 0,1 19.5,17A1.5,1.5 0 0,1 18,18.5M17,12V9.5H19.5L21.47,12H17Z" />
+      </svg>
+      <h2>CADASA</h2>
+      <p>Control de Transporte</p>
+      
+      <div class="input-group">
+        <label>USUARIO DE ACCESO</label>
+        <input type="text" id="username" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>CONTRASEÑA</label>
+        <input type="password" id="password">
+      </div>
+      <button class="login-btn" onclick="login()">INICIAR SESIÓN</button>
+      <p id="error-msg" style="color: #ff5f57; display:none; margin-top:1.5rem; font-weight:600;">Acceso denegado</p>
+    </div>
+  </div>
+
+  <div id="dashboard-page">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <svg class="logo-icon" viewBox="0 0 24 24"><path d="M20,8H17V4H3C1.89,4 1,4.89 1,6V17H3A3,3 0 0,0 6,20A3,3 0 0,0 9,17H15A3,3 0 0,0 18,20A3,3 0 0,0 21,17H23V12L20,8M6,18.5A1.5,1.5 0 0,1 4.5,17A1.5,1.5 0 0,1 6,15.5A1.5,1.5 0 0,1 7.5,17A1.5,1.5 0 0,1 6,18.5M18,18.5A1.5,1.5 0 0,1 16.5,17A1.5,1.5 0 0,1 18,15.5A1.5,1.5 0 0,1 19.5,17A1.5,1.5 0 0,1 18,18.5M17,12V9.5H19.5L21.47,12H17Z" /></svg>
+        <div style="font-family: 'Syne'; font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px;">CADASA <span style="color:var(--accent)">TRANSPORT CONTROL</span></div>
+      </div>
+      <button class="btn-logout" onclick="logout()">Cerrar Sistema</button>
+    </header>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1 id="display-user">Bienvenido</h1>
+          <p style="color: var(--muted); font-weight: 500;">Contrato asignado: <span id="display-contrato" style="color: var(--accent2);">---</span></p>
+        </div>
+        <div id="timestamp" style="text-align: right; font-size: 0.8rem; color: var(--muted);"></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrapper" id="content-area">
+          <div class="loader">Procesando registros de transporte...</div>
+          <table id="tabla-maestra"></table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const USER_DATA = {
+      "kherrera": { pass: "48351171", contrato: "17232" },
+      "mgomez": { pass: "4137792", contrato: "17233" },
+      "rarauz": { pass: "8477660", contrato: "17234" },
+      "jnuñez": { pass: "8502728", contrato: "17235" },
+      "jcianca": { pass: "418317", contrato: "17236" },
+      "agonzalez": { pass: "47122452", contrato: "17238" },
+      "garaúz": { pass: "4727312", contrato: "17239" },
+      "lortiz": { pass: "151448", contrato: "17240" },
+      "jsanchez": { pass: "4718971", contrato: "17241" },
+      "jcedeño": { pass: "663498", contrato: "17242" },
+      "mmarin": { pass: "47771490", contrato: "17243" },
+      "ssantamaria": { pass: "97162322", contrato: "17244" },
+      "mavendaño": { pass: "47351193", contrato: "17245" },
+      "cnuñez": { pass: "4724535", contrato: "17246" },
+      "cnuñez2": { pass: "4724535", contrato: "17247" },
+      "ngonzalez": { pass: "4206594", contrato: "17248" },
+      "mvasquez": { pass: "47541812", contrato: "17249" },
+      "fcerceño": { pass: "4787102", contrato: "17250" },
+      "bbeita": { pass: "47641964", contrato: "17251" },
+      "ccano": { pass: "48262490", contrato: "17253" },
+      "jserrano": { pass: "4747445", contrato: "17267" },
+      "ccastro": { pass: "4800662", contrato: "17268" },
+      "jsanchez2": { pass: "4718971", contrato: "17269" },
+      "fcerceño2": { pass: "4253592", contrato: "17270" },
+      "bbeita2": { pass: "47641964", contrato: "17271" },
+      "ccarreño": { pass: "4746749", contrato: "17272" },
+      "jnuñez2": { pass: "8502728", contrato: "17252" },
+      "rquiel": { pass: "4737783", contrato: "17254" },
+      "jmorales": { pass: "4702624", contrato: "17255" },
+      "ymiranda": { pass: "425062", contrato: "17256" },
+      "amorales": { pass: "4702624", contrato: "17257" },
+      "cortega": { pass: "4755965", contrato: "17258" },
+      "nagonzalez": { pass: "4730324", contrato: "17259" },
+      "cnuñez3": { pass: "4724535", contrato: "17260" },
+      "fcerceño3": { pass: "4787102", contrato: "17262" },
+      "fcerceño4": { pass: "4787102", contrato: "17261" },
+      "vvigil": { pass: "4214932", contrato: "17263" },
+      "smorales": { pass: "4274891", contrato: "17273" },
+      "aalfaro": { pass: "47271741", contrato: "17274" }
+    };
+
+    const MESES = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+
+    function login() {
+      const u = document.getElementById('username').value.trim().toLowerCase();
+      const p = document.getElementById('password').value.trim();
+      if (USER_DATA[u] && USER_DATA[u].pass === p) {
+        sessionStorage.setItem('isLogged', 'true');
+        sessionStorage.setItem('contrato', USER_DATA[u].contrato);
+        sessionStorage.setItem('userName', u);
+        showDashboard();
+      } else {
+        document.getElementById('error-msg').style.display = 'block';
+      }
+    }
+
+    function showDashboard() {
+      const contrato = sessionStorage.getItem('contrato');
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('dashboard-page').style.display = 'block';
+      document.getElementById('display-contrato').textContent = contrato;
+      document.getElementById('display-user').textContent = "Usuario: " + sessionStorage.getItem('userName').toUpperCase();
+      document.getElementById('timestamp').textContent = "Último acceso: " + new Date().toLocaleString();
+      fetchAndFilterData(contrato);
+    }
+
+    function fetchAndFilterData(numContrato) {
+      const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSKNF5AhWaVGQo2l1-WxMg7c6ngj23y17d92TlwpEuOwb51obUG1G41g5JphGiEQ/pub?gid=75071836&single=true&output=csv";
+      
+      fetch(url).then(res => res.text()).then(csvText => {
+        const rows = csvText.split("\n").filter(r => r.trim() !== "");
+        const header = rows[0].split(",");
+        const dataRows = rows.slice(1);
+        
+        // 1. Filtrar por contrato
+        let filtered = dataRows.filter(row => {
+          return row.split(",").some(cell => cell.trim() === numContrato);
+        });
+
+        // 2. Agrupar por Mes (Buscamos una fecha en la fila)
+        // Asumimos que la fecha está en formato DD/MM/YYYY o similar
+        let grouped = {};
+        filtered.forEach(rowStr => {
+          let cells = rowStr.split(",");
+          let dateStr = cells.find(c => c.includes("/") || c.includes("-")); // Detección simple de fecha
+          let monthIndex = 99; // Mes desconocido por defecto
+          
+          if(dateStr) {
+            let parts = dateStr.includes("/") ? dateStr.split("/") : dateStr.split("-");
+            // Intentamos detectar el mes: normalmente es la segunda parte en DD/MM/YYYY
+            let m = parseInt(parts[1]);
+            if(!isNaN(m)) monthIndex = m - 1;
+          }
+          
+          if(!grouped[monthIndex]) grouped[monthIndex] = [];
+          grouped[monthIndex].push(cells);
+        });
+
+        // 3. Construir Tabla
+        let html = `<tr class="header-row">${header.map(h => `<td>${h}</td>`).join("")}</tr>`;
+        let grandTotal = 0;
+
+        // Ordenar meses (0 a 11)
+        Object.keys(grouped).sort((a,b) => a-b).forEach(mIdx => {
+          let monthName = MESES[mIdx] || "SIN FECHA";
+          let monthRows = grouped[mIdx];
+          grandTotal += monthRows.length;
+
+          // Separador de Mes
+          html += `<tr class="month-divider"><td colspan="${header.length}">${monthName}</td></tr>`;
+          
+          // Filas de datos
+          monthRows.forEach(rowData => {
+            html += `<tr class="data-row">${rowData.map(c => `<td>${c}</td>`).join("")}</tr>`;
+          });
+
+          // Subtotal por Mes
+          html += `<tr class="subtotal-row"><td colspan="${header.length - 1}" style="text-align:right">Total viajes en ${monthName}:</td><td>${monthRows.length}</td></tr>`;
+        });
+
+        // Gran Total
+        html += `<tr class="grand-total-row"><td colspan="${header.length - 1}" style="text-align:right">GRAN TOTAL DE VIAJES:</td><td>${grandTotal}</td></tr>`;
+
+        document.getElementById('tabla-maestra').innerHTML = html;
+        if(filtered.length === 0) {
+          document.getElementById('content-area').innerHTML = "<div class='loader'>⚠️ No se encontraron viajes registrados para este contrato.</div>";
+        }
+      });
+    }
+
+    function logout() { sessionStorage.clear(); location.reload(); }
+    window.onload = () => { if(sessionStorage.getItem('isLogged')) showDashboard(); };
+  </script>
+</body>
+</html>
