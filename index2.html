@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Datos Corporativo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:       #0B1D3A;
+      --navy-mid:   #142850;
+      --accent:     #00C6A2;
+      --accent2:    #0066FF;
+      --surface:    #F4F7FC;
+      --white:      #FFFFFF;
+      --text:       #1A2740;
+      --muted:      #6B7FA3;
+      --border:     #DDE4EF;
+      --row-hover:  #EBF2FF;
+      --header-bg:  #0B1D3A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--navy);
+      padding: 0 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 24px rgba(0,0,0,.3);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .topbar-logo {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+    }
+
+    .topbar-logo svg { width: 20px; height: 20px; fill: var(--navy); }
+
+    .topbar-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: var(--white);
+      letter-spacing: -.02em;
+    }
+
+    .topbar-tag {
+      font-size: .7rem;
+      color: var(--accent);
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .topbar-right {
+      font-size: .8rem;
+      color: rgba(255,255,255,.45);
+      letter-spacing: .04em;
+    }
+
+    /* ── MAIN CONTAINER ── */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: var(--navy);
+      letter-spacing: -.04em;
+      line-height: 1.1;
+    }
+
+    .page-header h1 span {
+      color: var(--accent2);
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: #E8F5F2;
+      color: #00A083;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .35rem .8rem;
+      border-radius: 99px;
+      border: 1px solid #B2E4D8;
+    }
+
+    .badge-live::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(.7); }
+    }
+
+    /* ── TABLE CARD ── */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(11,29,58,.07);
+    }
+
+    .card-toolbar {
+      padding: 1.1rem 1.5rem;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #FF5F57; }
+    .dot-y { background: #FEBC2E; }
+    .dot-g { background: #28C840; }
+
+    .card-toolbar-label {
+      margin-left: .5rem;
+      font-size: .78rem;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: .04em;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+
+    /* Header row */
+    table tr:first-child td {
+      background: var(--header-bg);
+      color: rgba(255,255,255,.9);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 1rem 1.25rem;
+      white-space: nowrap;
+      border: none;
+    }
+
+    table tr:first-child td:first-child {
+      border-left: 4px solid var(--accent);
+    }
+
+    /* Data rows */
+    table tr:not(:first-child) td {
+      padding: .85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: middle;
+      transition: background .15s;
+    }
+
+    table tr:not(:first-child):hover td {
+      background: var(--row-hover);
+    }
+
+    table tr:not(:first-child):nth-child(even) td {
+      background: #F9FAFD;
+    }
+
+    table tr:not(:first-child):nth-child(even):hover td {
+      background: var(--row-hover);
+    }
+
+    table tr:not(:first-child) td:first-child {
+      font-weight: 600;
+      color: var(--navy);
+      border-left: 4px solid transparent;
+      transition: border-color .15s;
+    }
+
+    table tr:not(:first-child):hover td:first-child {
+      border-left-color: var(--accent2);
+    }
+
+    table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 2rem;
+      text-align: right;
+      font-size: .75rem;
+      color: var(--muted);
+    }
+
+    /* ── LOADING STATE ── */
+    .loading {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* fade-in rows */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    table tr { animation: fadeUp .25s ease both; }
+    table tr:nth-child(1)  { animation-delay: .05s; }
+    table tr:nth-child(2)  { animation-delay: .08s; }
+    table tr:nth-child(3)  { animation-delay: .11s; }
+    table tr:nth-child(4)  { animation-delay: .14s; }
+    table tr:nth-child(5)  { animation-delay: .17s; }
+    table tr:nth-child(6)  { animation-delay: .20s; }
+    table tr:nth-child(7)  { animation-delay: .23s; }
+    table tr:nth-child(8)  { animation-delay: .26s; }
+    table tr:nth-child(9)  { animation-delay: .29s; }
+    table tr:nth-child(10) { animation-delay: .32s; }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 4h2v-2h2v2h2v2h-2v2h-2v-2h-2z"/></svg>
+      </div>
+      <div>
+        <div class="topbar-name">DataCorp</div>
+        <div class="topbar-tag">Panel de Control</div>
+      </div>
+    </div>
+    <div class="topbar-right" id="timestamp"></div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container">
+
+    <div class="page-header">
+      <h1>Informe de <span>Datos</span><br>Google Sheets</h1>
+      <span class="badge-live">En tiempo real</span>
+    </div>
+
+    <div class="card">
+      <div class="card-toolbar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="card-toolbar-label">Fuente · Google Sheets</span>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          Cargando datos…
+        </div>
+        <table id="tabla"></table>
+      </div>
+    </div>
+
+    <div class="footer">Actualizado automáticamente · <span id="hora"></span></div>
+  </main>
+
+  <script>
+    // Timestamp
+    const now = new Date();
+    const fmt = now.toLocaleString('es-ES', { dateStyle:'long', timeStyle:'short' });
+    document.getElementById('timestamp').textContent = fmt;
+    document.getElementById('hora').textContent = fmt;
+
+    // Fetch data
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTetXGOATrxj96K0hLQWJsfrYtqX9xuigKzlRqnftVx6K3hgjbJP-Qy1CUl8TeY5_G_KnpPyF72RnSH/pub?gid=1482702797&single=true&output=csv")
+      .then(r => r.text())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        const filas = data.split("\n");
+        let html = "";
+        filas.forEach(fila => {
+          if (!fila.trim()) return;
+          html += "<tr>";
+          fila.split(",").forEach(celda => {
+            html += "<td>" + celda.trim() + "</td>";
+          });
+          html += "</tr>";
+        });
+        document.getElementById("tabla").innerHTML = html;
+      })
+      .catch(() => {
+        document.getElementById('loading').innerHTML = '⚠️ No se pudo cargar la información.';
+      });
+  </script>
+
+</body>
+</html>
